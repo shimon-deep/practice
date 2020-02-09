@@ -1,0 +1,17 @@
+h1 {
+    font-size: 60pt;
+    color: aqua;
+    text-align: center;
+    margin: 0px;
+}
+body {
+    font-size: 12pt;
+    color: #999;
+    text-align: center;
+    margin: 5px;
+}
+p {
+    font-size: 18pt;
+    color: #333;
+    margin: 0px 20px;
+}
