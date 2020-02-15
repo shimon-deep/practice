@@ -2,18 +2,18 @@ const http = require('http');
 const fs = require('fs');
 const ejs = require('ejs');
 const url = require('url');
+const qs = require('querystring');
 
-unicodeUTF8 = 'UTF-8';
 var iCount = 0;
 const index_page = fs.readFileSync('./index.ejs','utf8');
 const other_page = fs.readFileSync('./other.ejs','utf8');
 const style_css = fs.readFileSync('./style.css','utf8');
+const msgParseJson = JSON.parse(fs.readFileSync('./message.json', 'utf8'));
 
 var server = http.createServer(GetFromClient);
-
 server.listen(3000);
 trace("Server Starts.");
-trace("...");
+trace("listen ...");
 
 // ここまでメインプログラム=================
 
@@ -28,29 +28,10 @@ function GetFromClient(request, response) {
 
     switch (url_parts.pathname) {
         case '/':
-            var query = url_parts.query;
-            var content = "test...";
-
-            if (query.msg != void 0) {
-                content += 'Your message is ' + query.msg + '.';
-            }
-            var content = ejs.render(index_page, {
-                title:"suzuki",
-                content:content,
-            });
-            response.writeHead(200, {'Content-Type': 'text/html'})
-            response.write(content);
-            response.end();
+            response_index(request, response);
             break;
-
         case '/other':
-            var content = ejs.render(other_page, {
-                title:"other",
-                content:"new satoru",
-            });
-            response.writeHead(200, {'Content-Type': 'text/html'})
-            response.write(content);
-            response.end();
+            response_other(request, response);
             break;
         
         case '/style.css':
@@ -123,12 +104,80 @@ var server1 = http.createServer(
     }
 );
 
-/** デバッグモードかどうか。本番公開時にはfalseにする */
-var DEBUG_MODE = true;
+var data = {
+    'test1---':'test1msg---',
+    'test2--':'test2msg--',
+    'test3-':'test3msg-'
+}
+/**
+ * 機能概要：indexのアクセス処理
+ * @param {?} request
+ * @param {?} response
+ */
+function response_index(request, response) {
+    var msg = "これはIndexページです。";
+    var content = ejs.render(index_page, {
+        title:"Index",
+        content:msg,
+        data:data,
+        filename:'data_item'
+    });
+    response.writeHead(200, {'Content-Type': 'text/html'});
+    response.write(content);
+    response.end();
+}
 
-/** デバッグモードでConsoleAPIが有効な場合にログを出力する */ 
-function trace(s) {
+/**
+ * 機能概要：otherのアクセス処理
+ * @param {?} request
+ * @param {?} response
+ */
+function response_other(request, response) {
+    var msg = "これはOtherページです。";
+    // POSTアクセス時の処理
+    if (request.method == 'POST') {
+        var body = '';
+        
+        // データ受信のイベント処理
+        request.on('data', (data) => {
+            body += data; 
+        })
+        
+        // データ受信終了のイベント処理
+        request.on('end', () => {
+            var post_data = qs.parse(body); // データのパース
+            msg +='あなた、「' + post_data.msg + '」と書きました。';
+            var content = ejs.render(other_page, {
+                title:"Other",
+                content:msg,
+            });
+            response.writeHead(200, {'Content-Type': 'text/html'});
+            response.write(content);
+            response.end();
+        })
+    
+    // GETアクセス時の処理
+    } else {
+        var msg ='ページがありません。';
+        var content = ejs.render(other_page, {
+            title:"Other",
+            content:msg,
+        });
+        response.writeHead(200, {'Content-Type': 'text/html'});
+        response.write(content);
+        response.end();
+    }
+}
+
+/**
+ * 機能概要：デバッグモードでConsoleAPIが有効な場合にログを出力する
+ * @param {any} any 出力したいログ
+ */ 
+function trace(any) {
+    /**  */
+    var DEBUG_MODE = true; // true:on, false:off
+
     if (DEBUG_MODE && this.console && typeof console.log != "undefined") {
-        console.log(s);
+        console.log(any);
     }
 }

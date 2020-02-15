@@ -13,7 +13,17 @@
         </head>
         <div role="main">
             <p><%=content %></p>
-            <p><a href="/other">Other pageに移動 &gt;&gt;</a></p>
+            <form method="POST" action="/other">
+                <p>
+                    <input type="text" name="msg">
+                    <input type="submit" value="Click">
+                </p>
+            </form>
+            <p><table>
+                <% for(var key in data) { %>
+                    <%- include('data_item', {key:key, val:[data[key]]}) %>
+                <% } %>
+            </table></p>
         </div>
     </body>
 </html>
